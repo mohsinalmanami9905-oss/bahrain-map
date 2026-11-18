@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>خريطة البحرين</title>
+<meta name="description" content="خريطة البحرين مفصّلة تعمل بدون إنترنت — مفتوحة المصدر">
+<meta name="theme-color" content="#0e7490">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="خريطة البحرين">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/favicon-32.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<link rel="stylesheet" href="app.css">
+<script src="vendor/pmtiles.js"></script>
+<script src="vendor/basemaps.js"></script>
+<script src="precache-list.js"></script>
+</head>
+<body>
+<div id="map" aria-label="الخريطة"></div>
+
+<header id="topbar">
+  <div id="searchwrap">
+    <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="ابحث عن مكان، شارع، منطقة…" autocomplete="off" enterkeyhint="search" aria-label="بحث">
+    <button id="qclear" class="iconbtn" hidden aria-label="مسح"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <button id="menubtn" class="roundbtn" aria-label="القائمة"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<ul id="results" hidden></ul>
+
+<div id="offlinebar" hidden>
+  <div id="offtext">جاري تجهيز الخريطة للعمل بدون إنترنت…</div>
+  <div class="prog"><div id="offprog"></div></div>
+</div>
+
+<div id="fabs">
+  <button id="layersbtn" class="fab" aria-label="الطبقات"><svg class="ic" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg></button>
+  <button id="northbtn" class="fab" aria-label="الشمال" hidden><svg class="ic" viewBox="0 0 24 24" id="northic"><path d="M12 3l4 9h-8l4-9Z" fill="#e63946" stroke="#e63946"/><path d="M12 21l-4-9h8l-4 9Z"/></svg></button>
+  <button id="gpsbtn" class="fab big" aria-label="موقعي"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg></button>
+</div>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="grab"></div>
+  <div id="sheetbody"></div>
+</div>
+
+<div id="menu" class="sheet" hidden>
+  <div class="grab"></div>
+  <h2>الإعدادات</h2>
+  <div class="row"><span>لغة أسماء الخريطة</span>
+    <div class="seg" id="langseg"><button data-v="ar">عربي</button><button data-v="en">English</button></div></div>
+  <div class="row"><span>المظهر</span>
+    <div class="seg" id="themeseg"><button data-v="light">فاتح</button><button data-v="dark">داكن</button></div></div>
+  <div class="row"><span>نوع الخريطة</span>
+    <div class="seg" id="baseseg"><button data-v="map">خريطة</button><button data-v="sat">قمر صناعي</button></div></div>
+  <p class="note" id="satnote">صور القمر الصناعي تحتاج إنترنت (Esri World Imagery). الخريطة العادية تعمل بدون إنترنت.</p>
+  <h2>بدون إنترنت</h2>
+  <div class="card">
+    <div id="offstatus">…</div>
+    <div class="prog"><div id="offprog2"></div></div>
+    <button id="dlbtn" class="primary">تحميل خريطة البحرين للاستخدام بدون إنترنت</button>
+  </div>
+  <p class="note">البيانات: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">مساهمو OpenStreetMap</a> (ODbL) · <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a> · MapLibre. التطبيق مفتوح المصدر (MIT): <a href="https://github.com/mohsinalmanami9905-oss/bahrain-map" target="_blank" rel="noopener">GitHub</a></p>
+  <button id="menuclose" class="secondary">إغلاق</button>
+</div>
+
+<div id="toast" hidden></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

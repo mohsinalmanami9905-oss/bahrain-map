@@ -1,0 +1,4 @@
+bin/
+data/
+shots/*.png
+node_modules/

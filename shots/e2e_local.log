@@ -1,0 +1,22 @@
+PASS map loads 1.7s
+PASS offline data stored محفوظة على الجهاز ✓ (9.2 ميغابايت) · بيانات بتاريخ 2026-11-17 · المساحة المستخدمة على الجهاز: 15.4 ميغابايت
+PASS arabic labels rendered z14 ["المنامة", "الماحوز", "رأس رمان", "السلمانية", "السقية"]
+PASS search arabic (normalised ة/ه) ["السلمانية", "حديقة السلمانية", "مجمع السلمانية الطبي", "شارع السلمانية"]
+PASS result opens place sheet 26.219710, 50.572470
+PASS search english ["سيتي سنتر", "لی میریڈین", "سيتي سنتر البحرين", "Ramada City Centre Manama", "Hilton Bahrain City Centre Hotel & Residences"]
+PASS GPS centres on mocked Manama fix [50.587600000000066, 26.22350000007806, 16.5, 'follow']
+PASS GPS follow mode on follow
+PASS long-press drops pin + coordinates 26.222833, 50.587638
+PASS Google/Apple Maps links https://www.google.com/maps/search/?api=1&query=26.222833,50.587638
+PASS no page errors (online) 
+PASS app shell loads offline خريطة البحرين
+PASS offline render z8 features=141 layers=['places', 'roads', 'water', 'boundaries', 'landuse', 'earth'] ar=['البحرين', 'المحرق', 'تاروت']
+PASS offline render z10 features=221 layers=['places', 'boundaries', 'roads', 'water', 'landuse', 'earth'] ar=['آل إيكر', 'السهلة', 'جدعلي']
+PASS offline render z12 features=412 layers=['places', 'pois', 'roads', 'earth', 'boundaries', 'buildings', 'landuse', 'water'] ar=['قرية عذاري', 'البرهامة', 'السنابِس']
+PASS offline render z14 features=2120 layers=['places', 'pois', 'roads', 'buildings', 'water', 'landuse', 'earth'] ar=['المنامة', 'الماحوز', 'رأس رمان']
+PASS offline render z16 features=484 layers=['places', 'pois', 'roads', 'buildings', 'landuse', 'earth'] ar=['الحورة', 'مدرسة المأمون الإبتدائية للبنين', 'شارع خلف العصفور']
+PASS search works offline ["مطار البحرين الدولي", "مطار البحرين الدولي", "مواقف مطار البحرين"]
+PASS GPS works offline 
+PASS no page errors (offline) 
+
+20/20 passed

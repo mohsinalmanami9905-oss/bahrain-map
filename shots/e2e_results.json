@@ -1,0 +1,102 @@
+[
+ {
+  "test": "map loads",
+  "pass": true,
+  "info": "1.7s"
+ },
+ {
+  "test": "offline data stored",
+  "pass": true,
+  "info": "محفوظة على الجهاز ✓ (9.2 ميغابايت) · بيانات بتاريخ 2026-11-17 · المساحة المستخدمة على الجهاز: 15.4 ميغابايت"
+ },
+ {
+  "test": "arabic labels rendered z14",
+  "pass": true,
+  "info": "[\"المنامة\", \"الماحوز\", \"رأس رمان\", \"السلمانية\", \"السقية\"]"
+ },
+ {
+  "test": "search arabic (normalised ة/ه)",
+  "pass": true,
+  "info": "[\"السلمانية\", \"حديقة السلمانية\", \"مجمع السلمانية الطبي\", \"شارع السلمانية\"]"
+ },
+ {
+  "test": "result opens place sheet",
+  "pass": true,
+  "info": "26.219710, 50.572470"
+ },
+ {
+  "test": "search english",
+  "pass": true,
+  "info": "[\"سيتي سنتر\", \"لی میریڈین\", \"سيتي سنتر البحرين\", \"Ramada City Centre Manama\", \"Hilton Bahrain City Centre Hotel & Residences\"]"
+ },
+ {
+  "test": "GPS centres on mocked Manama fix",
+  "pass": true,
+  "info": "[50.587600000000066, 26.22350000007806, 16.5, 'follow']"
+ },
+ {
+  "test": "GPS follow mode on",
+  "pass": true,
+  "info": "follow"
+ },
+ {
+  "test": "long-press drops pin + coordinates",
+  "pass": true,
+  "info": "26.222833, 50.587638"
+ },
+ {
+  "test": "Google/Apple Maps links",
+  "pass": true,
+  "info": "https://www.google.com/maps/search/?api=1&query=26.222833,50.587638"
+ },
+ {
+  "test": "no page errors (online)",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "test": "app shell loads offline",
+  "pass": true,
+  "info": "خريطة البحرين"
+ },
+ {
+  "test": "offline render z8",
+  "pass": true,
+  "info": "features=141 layers=['places', 'roads', 'water', 'boundaries', 'landuse', 'earth'] ar=['البحرين', 'المحرق', 'تاروت']"
+ },
+ {
+  "test": "offline render z10",
+  "pass": true,
+  "info": "features=221 layers=['places', 'boundaries', 'roads', 'water', 'landuse', 'earth'] ar=['آل إيكر', 'السهلة', 'جدعلي']"
+ },
+ {
+  "test": "offline render z12",
+  "pass": true,
+  "info": "features=412 layers=['places', 'pois', 'roads', 'earth', 'boundaries', 'buildings', 'landuse', 'water'] ar=['قرية عذاري', 'البرهامة', 'السنابِس']"
+ },
+ {
+  "test": "offline render z14",
+  "pass": true,
+  "info": "features=2120 layers=['places', 'pois', 'roads', 'buildings', 'water', 'landuse', 'earth'] ar=['المنامة', 'الماحوز', 'رأس رمان']"
+ },
+ {
+  "test": "offline render z16",
+  "pass": true,
+  "info": "features=484 layers=['places', 'pois', 'roads', 'buildings', 'landuse', 'earth'] ar=['الحورة', 'مدرسة المأمون الإبتدائية للبنين', 'شارع خلف العصفور']"
+ },
+ {
+  "test": "search works offline",
+  "pass": true,
+  "info": "[\"مطار البحرين الدولي\", \"مطار البحرين الدولي\", \"مواقف مطار البحرين\"]"
+ },
+ {
+  "test": "GPS works offline",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "test": "no page errors (offline)",
+  "pass": true,
+  "info": ""
+ }
+]
