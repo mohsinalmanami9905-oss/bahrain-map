@@ -1,6 +1,6 @@
 // Service worker: offline app shell + local map data (MIT)
 importScripts('precache-list.js');
-const VERSION = '1c265cae45';
+const VERSION = 'fd68184ca7';
 const SHELL = 'bm-shell-' + VERSION;
 const DATA = 'bm-data-v1';      // map data stays across app updates
 const RUNTIME = 'bm-rt-v1';     // extra glyph ranges etc.

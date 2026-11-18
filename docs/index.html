@@ -57,15 +57,23 @@
   <div class="row"><span>المظهر</span>
     <div class="seg" id="themeseg"><button data-v="light">فاتح</button><button data-v="dark">داكن</button></div></div>
   <div class="row"><span>نوع الخريطة</span>
-    <div class="seg" id="baseseg"><button data-v="map">خريطة</button><button data-v="sat">قمر صناعي</button></div></div>
-  <p class="note" id="satnote">صور القمر الصناعي تحتاج إنترنت (Esri World Imagery). الخريطة العادية تعمل بدون إنترنت.</p>
+    <div class="seg" id="baseseg"><button data-v="map">خريطة</button><button data-v="sat">قمر صناعي</button><button data-v="esri">Esri (إنترنت)</button></div></div>
+  <div class="row"><span>الأسماء فوق صور القمر الصناعي</span>
+    <div class="seg" id="labelseg"><button data-v="1">إظهار</button><button data-v="0">إخفاء</button></div></div>
+  <p class="note" id="satnote">«قمر صناعي» صور مفتوحة الترخيص تعمل بدون إنترنت بعد تحميلها: كل البحرين بدقة 10 م (Sentinel-2، 2026) وأغلب شمال البحرين وحوار بدقة 1 م (Satellogic، 2022؛ وسط المنامة غير مشمول). «Esri» أدق لكنه يحتاج إنترنت دائماً.</p>
   <h2>بدون إنترنت</h2>
   <div class="card">
     <div id="offstatus">…</div>
     <div class="prog"><div id="offprog2"></div></div>
     <button id="dlbtn" class="primary">تحميل خريطة البحرين للاستخدام بدون إنترنت</button>
   </div>
-  <p class="note">البيانات: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">مساهمو OpenStreetMap</a> (ODbL) · <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a> · MapLibre. التطبيق مفتوح المصدر (MIT): <a href="https://github.com/mohsinalmanami9905-oss/bahrain-map" target="_blank" rel="noopener">GitHub</a></p>
+  <div class="card">
+    <div id="satstatus">…</div>
+    <div class="prog"><div id="satprog"></div></div>
+    <button id="satdlbtn" class="primary">تحميل صور القمر الصناعي للاستخدام بدون إنترنت</button>
+    <button id="satdelbtn" class="secondary" hidden>حذف صور القمر الصناعي من الجهاز</button>
+  </div>
+  <p class="note">البيانات: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">مساهمو OpenStreetMap</a> (ODbL) · <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a> · MapLibre. صور القمر الصناعي: Contains modified Copernicus Sentinel data 2026 · <a href="https://registry.opendata.aws/satellogic-earthview/" target="_blank" rel="noopener">Satellogic EarthView</a> (CC BY 4.0) · Esri World Imagery (عرض مباشر فقط). التطبيق مفتوح المصدر (MIT): <a href="https://github.com/mohsinalmanami9905-oss/bahrain-map" target="_blank" rel="noopener">GitHub</a></p>
   <button id="menuclose" class="secondary">إغلاق</button>
 </div>
 

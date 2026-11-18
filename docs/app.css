@@ -54,3 +54,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 .satbadge{position:fixed;top:calc(var(--st) + 66px);right:10px;background:#b45309;color:#fff;font-size:12px;padding:4px 10px;border-radius:10px;z-index:3}
 .pin{width:30px;height:40px}
 [hidden]{display:none!important}
+.row{flex-wrap:wrap}
+#baseseg button{padding:8px 10px;min-width:56px}
+.card+.card{margin-top:10px}

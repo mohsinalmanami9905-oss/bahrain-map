@@ -2,3 +2,6 @@
 /data/
 shots/*.png
 node_modules/
+/raw_s2/
+/raw_satl/
+shots_sat/*.png

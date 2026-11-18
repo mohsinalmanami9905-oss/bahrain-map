@@ -24,5 +24,12 @@ meta = {
     'osm_date': m.group(1) if m else datetime.date.today().isoformat(),
     'bbox': [50.20, 25.50, 50.90, 26.40], 'maxzoom': 15,
 }
+# offline satellite packs: s2.pmtiles (Sentinel-2 base) first, then hr-*.pmtiles (1 m Satellogic) on top
+sat = sorted(f for f in os.listdir('data/sat') if f.endswith('.pmtiles')) if os.path.isdir('data/sat') else []
+sat.sort(key=lambda f: (f != 's2.pmtiles', f))
+if sat:
+    files = [{'name': f, 'kind': 's2' if f == 's2.pmtiles' else 'hr', 'size': os.path.getsize('data/sat/' + f)} for f in sat]
+    meta['sat'] = {'files': files, 'version': hashlib.sha256(json.dumps(files).encode()).hexdigest()[:10],
+                   's2_date': '2026-09/11', 'hr_date': '2022'}
 json.dump(meta, open('data/meta.json', 'w'))
 print(json.dumps(meta))

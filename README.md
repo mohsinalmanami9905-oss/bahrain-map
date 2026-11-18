@@ -10,7 +10,11 @@ Open-source, installable web app with a detailed vector map of Bahrain that work
 - GPS "my location" (follow mode; second tap = compass mode, rotates the map with the phone's heading).
 - Offline search (~21k places/streets, Arabic/English, Arabic normalisation أ/ا، ة/ه، ى/ي, optional «ال»).
 - Long-press → pin with coordinates, copy, share, open in Google Maps / Apple Maps.
-- Optional **online** satellite layer (Esri World Imagery) — clearly marked "needs internet".
+- **Offline satellite layer** built only from openly licensed imagery (see `SATELLITE_SOURCES.md`):
+  - Sentinel-2 10 m cloud-free composite (Sep–Nov 2026) for all of Bahrain + Hawar, ~4 MB, downloaded automatically with the map;
+  - Satellogic EarthView **1 m** imagery (2022, CC BY 4.0) for most of northern Bahrain (Seef, Muharraq, Juffair, Sitra, Isa Town, Riffa, Hamad Town, …) and Hawar. It's an optional download with a progress bar (menu → «تحميل صور القمر الصناعي عالية الدقة»), colour-matched to Sentinel-2 and split into parts under 90 MB.
+  - Labels (Arabic/English) drawn on top of the imagery, with a show/hide toggle.
+- Optional **online** Esri World Imagery (sharper, needs internet, never cached because Esri's terms forbid it).
 - Service worker caches the app shell; the whole `.pmtiles` file is downloaded once into Cache Storage (auto on first open, or the "download" button with progress bar) and read locally from a Blob.
 
 ## Layout
@@ -19,6 +23,8 @@ Open-source, installable web app with a detailed vector map of Bahrain that work
 - `tools/stamp.py` — writes `docs/data/meta.json` and bumps the service-worker cache version
 - `tools/serve.mjs` — local static server with HTTP Range support
 - `tools/e2e.py` — Playwright test (iPhone 390×844, mocked GPS, offline reload)
+- `tools/e2e_sat.py` — Playwright test of the offline satellite layer (download, go offline, render z9–z18)
+- `tools/s2_warp.py`, `s2_tiles.py`, `satl_fetch.py`, `satl_balance.py`, `satl_tiles.py`, `split_mbtiles.py`, `tilekit.py` — satellite pipeline (see `SATELLITE_SOURCES.md`)
 
 ## Rebuild the data
 ```sh
@@ -28,4 +34,4 @@ python3 tools/stamp.py
 ```
 
 ## Licences
-Code: MIT. Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), ODbL 1.0. Tiles schema/style: Protomaps (BSD-3-Clause). MapLibre GL JS (BSD-3-Clause). Noto Sans fonts (SIL OFL 1.1). Satellite imagery (online only) © Esri, Maxar, Earthstar Geographics.
+Code: MIT. Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), ODbL 1.0. Tiles schema/style: Protomaps (BSD-3-Clause). MapLibre GL JS (BSD-3-Clause). Noto Sans fonts (SIL OFL 1.1). Offline imagery: contains modified Copernicus Sentinel data 2026; Satellogic EarthView © Satellogic, CC BY 4.0. Online-only imagery © Esri, Maxar, Earthstar Geographics.

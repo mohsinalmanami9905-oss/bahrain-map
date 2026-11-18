@@ -10,6 +10,9 @@ const SHELL_CACHE_PREFIX = 'bm-shell-';
 const BAHRAIN = { center: [50.555, 26.07], zoom: 9.4 };
 const OSM_ATTR = '<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors (ODbL)</a> · <a href="https://protomaps.com" target="_blank">Protomaps</a>';
 const SAT_ATTR = 'Imagery © <a href="https://www.esri.com" target="_blank">Esri</a>, Maxar, Earthstar Geographics';
+const S2_ATTR = '<a href="https://dataspace.copernicus.eu" target="_blank">Contains modified Copernicus Sentinel data 2026</a>';
+const HR_ATTR = '<a href="https://registry.opendata.aws/satellogic-earthview/" target="_blank">Satellogic EarthView 2022 (CC BY 4.0)</a>';
+const SAT_URL = (f) => BASE + 'data/sat/' + f;
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -18,7 +21,8 @@ const store = {
 };
 let lang = store.get('lang', 'ar');
 let theme = store.get('theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-let base = 'map'; // satellite is never persisted: it needs internet
+let base = store.get('base', 'map'); if (!['map', 'sat'].includes(base)) base = 'map'; // 'esri' needs internet: never persisted
+let labelsOn = store.get('labels', '1') === '1';
 document.body.classList.toggle('dark', theme === 'dark');
 
 // ---------- toast ----------
@@ -42,7 +46,15 @@ class RangeOrWholeSource {
     if (this.whole) return { data: await this.whole.slice(offset, offset + length).arrayBuffer() };
     const r = await fetch(this.url, { headers: { Range: `bytes=${offset}-${offset + length - 1}` }, signal });
     if (r.status === 206) return { data: await r.arrayBuffer() };
-    if (r.status === 200) { this.whole = await r.blob(); return { data: await this.whole.slice(offset, offset + length).arrayBuffer() }; }
+    if (r.status === 200) {
+      const len = +r.headers.get('Content-Length') || 0;
+      if (len && len < 30e6) { this.whole = await r.blob(); return { data: await this.whole.slice(offset, offset + length).arrayBuffer() }; }
+      // big file (satellite) on a cold CDN edge: stream only up to the bytes we need, then stop
+      const rd = r.body.getReader(); const parts = []; let got = 0;
+      while (got < offset + length) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; }
+      rd.cancel().catch(() => {});
+      return { data: await new Blob(parts).slice(offset, offset + length).arrayBuffer() };
+    }
     throw new Error('HTTP ' + r.status);
   }
 }
@@ -62,13 +74,43 @@ async function useLocalBlob(blob) {
 const bootBlob = await cachedPmtiles();
 if (bootBlob) await useLocalBlob(bootBlob);
 
+// ---------- offline satellite packs (data/sat/*.pmtiles, listed in meta.json) ----------
+let meta = null;
+async function getMeta() {
+  if (meta) return meta;
+  try { meta = await (await fetch(META_URL, { cache: 'no-cache' })).json(); } catch {
+    try { meta = await (await caches.match(META_URL)).json(); } catch { meta = null; }
+  }
+  return meta;
+}
+const bootMeta = await Promise.race([getMeta(), new Promise((r) => setTimeout(() => r(null), 4000))]);
+const SAT_FILES = (bootMeta?.sat?.files || [{ name: 's2.pmtiles', kind: 's2', size: 0 }]);
+let satLocal = 0; const satLocalSet = new Set();
+for (const f of SAT_FILES) {
+  const url = SAT_URL(f.name); let blob = null;
+  try { const r = await (await caches.open(DATA_CACHE)).match(url); if (r) blob = await r.blob(); } catch {}
+  if (blob && (!f.size || blob.size === f.size)) { protocol.add(new pmtiles.PMTiles(new BlobSource(blob, url))); satLocalSet.add(f.name); satLocal++; }
+  else protocol.add(new pmtiles.PMTiles(new RangeOrWholeSource(url)));
+}
+window.__satLocal = () => satLocal;
+
 // ---------- style ----------
 function firstSymbolIndex(layers) { const i = layers.findIndex((l) => l.type === 'symbol'); return i < 0 ? layers.length : i; }
 function buildStyle() {
-  const layers = basemaps.layers('protomaps', basemaps.namedFlavor(theme), { lang });
-  const sat = { id: 'satellite', type: 'raster', source: 'esri', layout: { visibility: base === 'sat' ? 'visible' : 'none' } };
-  layers.splice(firstSymbolIndex(layers), 0, sat);
-  if (base === 'sat') for (const l of layers) if (l.type === 'symbol' && l.paint) { l.paint['text-halo-width'] = 1.6; }
+  let layers = basemaps.layers('protomaps', basemaps.namedFlavor(theme), { lang });
+  const vis = (on) => ({ visibility: on ? 'visible' : 'none' });
+  const imagery = [{ id: 'satellite', type: 'raster', source: 'esri', layout: vis(base === 'esri') }];
+  const satSources = {};
+  SAT_FILES.forEach((f, i) => {
+    const id = 'sat-' + i;
+    satSources[id] = { type: 'raster', url: 'pmtiles://' + SAT_URL(f.name), tileSize: 256, attribution: f.kind === 's2' ? S2_ATTR : HR_ATTR };
+    imagery.push({ id, type: 'raster', source: id, layout: vis(base === 'sat'), paint: { 'raster-fade-duration': 0 },
+      ...(f.kind === 's2' ? {} : { minzoom: 13 }) });
+  });
+  const imageryOn = base !== 'map';
+  if (imageryOn && !labelsOn) layers = layers.filter((l) => l.type !== 'symbol');
+  layers.splice(firstSymbolIndex(layers), 0, ...imagery);
+  if (imageryOn) for (const l of layers) if (l.type === 'symbol' && l.paint) { l.paint['text-halo-width'] = 1.6; }
   return {
     version: 8,
     glyphs: BASE + 'fonts/{fontstack}/{range}.pbf',
@@ -77,6 +119,7 @@ function buildStyle() {
       protomaps: { type: 'vector', url: 'pmtiles://' + PM_URL, attribution: OSM_ATTR },
       esri: { type: 'raster', tileSize: 256, maxzoom: 19, attribution: SAT_ATTR,
         tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'] },
+      ...satSources,
     },
     layers,
   };
@@ -222,21 +265,26 @@ $('#menubtn').onclick = () => { hideResults(); syncSegs(); refreshOfflineStatus(
 $('#layersbtn').onclick = () => { hideResults(); syncSegs(); refreshOfflineStatus(); openSheet('#menu'); };
 $('#menuclose').onclick = closeSheets;
 function syncSegs() {
-  for (const [id, v] of [['#langseg', lang], ['#themeseg', theme], ['#baseseg', base]])
+  for (const [id, v] of [['#langseg', lang], ['#themeseg', theme], ['#baseseg', base], ['#labelseg', labelsOn ? '1' : '0']])
     for (const b of document.querySelectorAll(id + ' button')) b.classList.toggle('on', b.dataset.v === v);
 }
 $('#langseg').onclick = (e) => { const v = e.target.dataset?.v; if (!v || v === lang) return; lang = v; store.set('lang', v); syncSegs(); applyStyle(); };
 $('#themeseg').onclick = (e) => { const v = e.target.dataset?.v; if (!v || v === theme) return; theme = v; store.set('theme', v); syncSegs(); applyStyle(); };
 $('#baseseg').onclick = (e) => {
   const v = e.target.dataset?.v; if (!v || v === base) return;
-  if (v === 'sat' && !navigator.onLine) { toast('القمر الصناعي يحتاج إنترنت — أنت الآن بدون اتصال'); return; }
-  base = v; syncSegs(); applyStyle(); updateSatBadge();
+  if (v === 'esri' && !navigator.onLine) { toast('صور Esri تحتاج إنترنت — استخدم «قمر صناعي» المحفوظ على الجهاز'); return; }
+  if (v === 'sat' && !navigator.onLine && satLocal < SAT_FILES.length) toast(satLocal ? 'محفوظ بدقة 10 م فقط — للصور الأدق (1 م) حمّلها من القائمة وأنت متصل' : 'صور القمر الصناعي غير محمّلة بعد — حمّلها من القائمة وأنت متصل', 4000);
+  base = v; if (v !== 'esri') store.set('base', v); syncSegs(); applyStyle(); updateSatBadge();
 };
+$('#labelseg').onclick = (e) => { const v = e.target.dataset?.v; if (!v) return; labelsOn = v === '1'; store.set('labels', v); syncSegs(); applyStyle(); };
 function updateSatBadge() {
   let b = $('.satbadge');
-  if (base === 'sat') { if (!b) { b = document.createElement('div'); b.className = 'satbadge'; document.body.append(b); } b.textContent = navigator.onLine ? 'قمر صناعي · يحتاج إنترنت' : 'قمر صناعي غير متاح بدون إنترنت'; }
+  const txt = base === 'esri' ? (navigator.onLine ? 'Esri · صور أدق · يحتاج إنترنت' : 'Esri غير متاح بدون إنترنت')
+    : base === 'sat' ? (satLocal >= SAT_FILES.length ? 'قمر صناعي · محفوظ على الجهاز ✓' : satLocal ? 'قمر صناعي · محفوظ 10 م · الدقة 1 م تحتاج تحميل' : 'قمر صناعي · غير محفوظ بعد (يحتاج إنترنت)') : null;
+  if (txt) { if (!b) { b = document.createElement('div'); b.className = 'satbadge'; document.body.append(b); } b.textContent = txt; }
   else b?.remove();
 }
+updateSatBadge();
 addEventListener('online', updateSatBadge); addEventListener('offline', updateSatBadge);
 
 // ---------- search ----------
@@ -316,14 +364,6 @@ async function runSearch() {
 
 // ---------- offline download ----------
 const mb = (b) => (b / 1048576).toFixed(1) + ' ميغابايت';
-let meta = null;
-async function getMeta() {
-  if (meta) return meta;
-  try { meta = await (await fetch(META_URL, { cache: 'no-cache' })).json(); } catch {
-    try { meta = await (await caches.match(META_URL)).json(); } catch { meta = null; }
-  }
-  return meta;
-}
 function setProgress(p, text) {
   for (const id of ['#offprog', '#offprog2']) $(id).style.width = Math.round(p * 100) + '%';
   if (text) { $('#offtext').textContent = text; }
@@ -377,6 +417,84 @@ async function downloadOffline(auto = false) {
   }
 }
 window.__downloadOffline = downloadOffline;
+
+// ---------- satellite pack download (streamed straight into Cache Storage, per file) ----------
+const satTotal = () => SAT_FILES.reduce((a, f) => a + (f.size || 0), 0);
+let satDownloading = false;
+const isSatLocal = (f) => satLocalSet.has(f.name);
+async function downloadSatellite(onlyBase = false) {
+  if (satDownloading) return; if (!('caches' in window)) { toast('المتصفح لا يدعم التخزين'); return; }
+  if (!navigator.onLine) { if (!onlyBase) toast('تحتاج إنترنت لتحميل صور القمر الصناعي'); return; }
+  const files = SAT_FILES.filter((f) => !onlyBase || f.kind === 's2');
+  satDownloading = true; $('#satdlbtn').disabled = true; if (!onlyBase) $('#offlinebar').hidden = false;
+  const total = files.reduce((a, f) => a + (f.size || 0), 0); let doneBytes = 0;
+  const show = (extra) => {
+    const p = total ? Math.min(1, (doneBytes + extra) / total) : 0;
+    $('#satprog').style.width = Math.round(p * 100) + '%';
+    if (onlyBase) return;
+    $('#offprog').style.width = Math.round(p * 100) + '%';
+    $('#offtext').textContent = `جاري تحميل صور القمر الصناعي… ${mb(doneBytes + extra)} من ${mb(total)}`;
+  };
+  try {
+    try { await navigator.storage?.persist?.(); } catch {}
+    const data = await caches.open(DATA_CACHE);
+    for (const f of files) {
+      const url = SAT_URL(f.name);
+      if (isSatLocal(f)) { doneBytes += f.size; show(0); continue; }
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok || !res.body) throw new Error('HTTP ' + res.status);
+      // read with progress into a Blob (each part < 90 MB), then store; works on iOS Safari
+      const reader = res.body.getReader(); const chunks = []; let got = 0;
+      for (;;) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); got += value.length; show(got); }
+      const blob = new Blob(chunks, { type: 'application/octet-stream' }); chunks.length = 0;
+      if (f.size && blob.size !== f.size) throw new Error('size mismatch ' + f.name);
+      await data.put(url, new Response(blob, { headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': String(blob.size) } }));
+      protocol.add(new pmtiles.PMTiles(new BlobSource(blob, url)));
+      satLocalSet.add(f.name); satLocal = satLocalSet.size;
+      doneBytes += f.size || blob.size; show(0);
+    }
+    if (!onlyBase) {
+      store.set('satVersion', (await getMeta())?.sat?.version || '');
+      $('#offtext').textContent = 'جاهز ✓ صور القمر الصناعي تعمل الآن بدون إنترنت';
+      setTimeout(() => ($('#offlinebar').hidden = true), 2000);
+      toast('تم ✓ صور القمر الصناعي محفوظة على جهازك');
+    }
+    if (base === 'sat') applyStyle();
+  } catch (e) {
+    console.error(e);
+    if (!onlyBase) {
+      $('#offtext').textContent = 'انقطع تحميل صور القمر الصناعي — اضغط الزر مرة ثانية للإكمال';
+      setTimeout(() => ($('#offlinebar').hidden = true), 5000);
+    }
+  } finally { satDownloading = false; $('#satdlbtn').disabled = false; refreshOfflineStatus(); updateSatBadge(); }
+}
+window.__downloadSatellite = downloadSatellite;
+$('#satdlbtn').onclick = () => downloadSatellite(false);
+$('#satdelbtn').onclick = async () => {
+  if (!confirm('حذف صور القمر الصناعي عالية الدقة من الجهاز؟ (الخريطة وصور 10 م تبقى)')) return;
+  const data = await caches.open(DATA_CACHE);
+  for (const f of SAT_FILES) if (f.kind !== 's2') { await data.delete(SAT_URL(f.name)); protocol.add(new pmtiles.PMTiles(new RangeOrWholeSource(SAT_URL(f.name)))); satLocalSet.delete(f.name); }
+  satLocal = satLocalSet.size; refreshOfflineStatus(); updateSatBadge(); if (base === 'sat') applyStyle();
+};
+async function refreshSatStatus() {
+  const m = await getMeta(); const s = m?.sat; const total = satTotal();
+  const hrMissing = SAT_FILES.filter((f) => !isSatLocal(f)).reduce((a, f) => a + (f.size || 0), 0);
+  const parts = [];
+  if (s?.s2_date) parts.push(`كل البحرين بدقة 10 م (Sentinel-2، ${s.s2_date})`);
+  if (s?.hr_date) parts.push(`أغلب شمال البحرين (السيف، المحرق، الجفير، سترة، الرفاع، مدينة حمد…) وحوار بدقة 1 م (Satellogic، ${s.hr_date})`);
+  const desc = parts.join(' + ');
+  if (satLocal >= SAT_FILES.length) {
+    const outdated = s?.version && store.get('satVersion', '') && store.get('satVersion', '') !== s.version;
+    $('#satstatus').textContent = `محفوظة على الجهاز ✓ (${mb(total)}) · ${desc}` + (outdated ? ' — يوجد تحديث' : '');
+    $('#satdlbtn').textContent = outdated ? 'تحديث صور القمر الصناعي' : 'صور القمر الصناعي محفوظة ✓';
+    $('#satdelbtn').hidden = false;
+  } else {
+    const baseOk = SAT_FILES.filter((f) => f.kind === 's2').every(isSatLocal);
+    $('#satstatus').textContent = (baseOk ? 'صور 10 م لكل البحرين محفوظة ✓ · الصور عالية الدقة (1 م) غير محفوظة. ' : 'غير محفوظة. ') + `${desc}`;
+    $('#satdlbtn').textContent = `تحميل صور القمر الصناعي عالية الدقة للاستخدام بدون إنترنت (${mb(hrMissing)})`;
+    $('#satdelbtn').hidden = !SAT_FILES.some((f) => f.kind !== 's2' && isSatLocal(f));
+  }
+}
 $('#dlbtn').onclick = () => downloadOffline(false);
 async function refreshOfflineStatus() {
   const el = $('#offstatus'); const m = await getMeta();
@@ -394,6 +512,7 @@ async function refreshOfflineStatus() {
     $('#dlbtn').textContent = 'تحميل خريطة البحرين للاستخدام بدون إنترنت';
   }
   window.__offlineStored = stored;
+  refreshSatStatus();
 }
 
 // ---------- boot ----------
@@ -404,8 +523,9 @@ async function refreshOfflineStatus() {
   }
   if (!blob && navigator.onLine) {
     await navigator.serviceWorker?.ready.catch(() => {});
-    downloadOffline(true);
+    downloadOffline(true).then(() => downloadSatellite(true));
   } else if (blob && navigator.onLine) {
+    downloadSatellite(true); // small 10 m base imagery (~5 MB) rides along with the map
     const m = await getMeta(); if (m?.version && store.get('offlineVersion', '') !== m.version) toast('يوجد تحديث للخريطة — من القائمة اضغط «تحديث»', 4000);
   }
   window.__ready = true;
