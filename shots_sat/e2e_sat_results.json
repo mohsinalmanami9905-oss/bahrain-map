@@ -1,0 +1,107 @@
+[
+ {
+  "test": "vector map stored offline",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "test": "satellite pack status + size shown",
+  "pass": true,
+  "info": "صور 10 م لكل البحرين محفوظة ✓ · الصور عالية الدقة (1 م) غير محفوظة. كل البحرين بدقة 10 م (Sentinel-2، 2026-09/11) + أغلب شمال البحرين (السيف، المحرق، الجفير، سترة، الرفاع، مدينة حمد…) وحوار بدقة 1 م (Satellogic، 2022) | تحميل صور القمر الصناعي عالية الدقة للاستخدام بدون إنترنت (78.6 ميغابايت)"
+ },
+ {
+  "test": "satellite pack downloaded",
+  "pass": true,
+  "info": "4s · محفوظة على الجهاز ✓ (82.5 ميغابايت) · كل البحرين بدقة 10 م (Sentinel-2، 2026-09/11) + أغلب شمال البحرين (السيف، المحرق، الجفير، سترة، الرفاع، مدينة حمد…) وحوار بدقة 1 م (Satellogic، 2022)"
+ },
+ {
+  "test": "satellite base persisted after reload",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "test": "offline imagery north_z12",
+  "pass": true,
+  "info": "tiles={'sat-0': 10, 'sat-1': 0} texture_sd=54.5"
+ },
+ {
+  "test": "offline imagery seef_z17_1m",
+  "pass": true,
+  "info": "tiles={'sat-0': 2, 'sat-1': 6} texture_sd=34.2"
+ },
+ {
+  "test": "offline imagery isa_town_z16_1m",
+  "pass": true,
+  "info": "tiles={'sat-0': 1, 'sat-1': 8} texture_sd=42.8"
+ },
+ {
+  "test": "offline imagery juffair_z17_1m",
+  "pass": true,
+  "info": "tiles={'sat-0': 2, 'sat-1': 4} texture_sd=39.5"
+ },
+ {
+  "test": "offline imagery muharraq_z16_1m",
+  "pass": true,
+  "info": "tiles={'sat-0': 2, 'sat-1': 15} texture_sd=50.9"
+ },
+ {
+  "test": "offline imagery riffa_z17_1m",
+  "pass": true,
+  "info": "tiles={'sat-0': 1, 'sat-1': 3} texture_sd=46.2"
+ },
+ {
+  "test": "offline imagery seef_z18_overzoom",
+  "pass": true,
+  "info": "tiles={'sat-0': 1, 'sat-1': 4} texture_sd=31.7"
+ },
+ {
+  "test": "offline imagery manama_centre_gap_z15_10m",
+  "pass": true,
+  "info": "tiles={'sat-0': 2, 'sat-1': 8} texture_sd=31.0"
+ },
+ {
+  "test": "offline imagery south_desert_z13_10m",
+  "pass": true,
+  "info": "tiles={'sat-0': 12, 'sat-1': 12} texture_sd=12.6"
+ },
+ {
+  "test": "offline imagery south_land_z15_10m",
+  "pass": true,
+  "info": "tiles={'sat-0': 4, 'sat-1': 8} texture_sd=20.0"
+ },
+ {
+  "test": "offline imagery hawar_z15_1m",
+  "pass": true,
+  "info": "tiles={'sat-0': 1, 'sat-1': 12} texture_sd=49.3"
+ },
+ {
+  "test": "offline imagery bahrain_z9",
+  "pass": true,
+  "info": "tiles={'sat-0': 8, 'sat-1': 0} texture_sd=59.1"
+ },
+ {
+  "test": "labels toggle off",
+  "pass": true,
+  "info": "symbol layers=0"
+ },
+ {
+  "test": "labels toggle on",
+  "pass": true,
+  "info": "symbol layers=14"
+ },
+ {
+  "test": "Esri refused offline with message",
+  "pass": true,
+  "info": "صور Esri تحتاج إنترنت — استخدم «قمر صناعي» المحفوظ على الجهاز"
+ },
+ {
+  "test": "no page errors (offline)",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "test": "Esri online option visible",
+  "pass": true,
+  "info": ""
+ }
+]

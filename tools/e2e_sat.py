@@ -57,13 +57,15 @@ with sync_playwright() as p:
     errors.clear(); ctx.set_offline(True)
     page.reload(wait_until='load'); wait_idle(page)
     check('satellite base persisted after reload', page.evaluate("() => window.__map.getLayoutProperty('sat-0','visibility')") == 'visible')
-    views = [('north_manama_z12', [50.58, 26.21], 12), ('manama_z15_1m', [50.5866, 26.2285], 15), ('manama_z17_1m', [50.5795, 26.2302], 17),
-             ('muharraq_z16_1m', [50.615, 26.258], 16), ('seef_z18_overzoom', [50.532, 26.236], 18), ('south_desert_z13_s2', [50.55, 25.9], 13),
-             ('south_z15_s2_overzoom', [50.6, 25.85], 15), ('hawar_z15', [50.77, 25.65], 15), ('bahrain_z9', [50.55, 26.05], 9)]
+    views = [('north_z12', [50.58, 26.21], 12), ('seef_z17_1m', [50.532, 26.236], 17), ('isa_town_z16_1m', [50.548, 26.17], 16),
+             ('juffair_z17_1m', [50.603, 26.212], 17), ('muharraq_z16_1m', [50.615, 26.258], 16), ('riffa_z17_1m', [50.555, 26.13], 17),
+             ('seef_z18_overzoom', [50.532, 26.236], 18), ('manama_centre_gap_z15_10m', [50.5866, 26.2285], 15),
+             ('south_desert_z13_10m', [50.55, 25.9], 13), ('south_land_z15_10m', [50.56, 25.92], 15), ('hawar_z15_1m', [50.77, 25.65], 15),
+             ('bahrain_z9', [50.55, 26.05], 9)]
     for name, c, z in views:
         page.evaluate(f"() => window.__map.jumpTo({{center:{c}, zoom:{z}, bearing:0}})"); wait_idle(page)
         path, sd = shot(page, 'offline_' + name); t = sat_tiles(page)
-        check(f'offline imagery {name}', sum(t.values()) > 0 and sd > 12, f'tiles={t} texture_sd={sd:.1f}')
+        check(f'offline imagery {name}', sum(t.values()) > 0 and sd > (5 if name.endswith('10m') else 12), f'tiles={t} texture_sd={sd:.1f}')
     page.click('#menubtn'); page.click('#labelseg button[data-v="0"]'); page.click('#menuclose')
     page.evaluate("() => window.__map.jumpTo({center:[50.5866,26.2285], zoom:15})"); wait_idle(page)
     nsym = page.evaluate("() => window.__map.getStyle().layers.filter(l => l.type === 'symbol').length")

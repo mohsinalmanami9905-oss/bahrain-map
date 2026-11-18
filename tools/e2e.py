@@ -22,7 +22,7 @@ def rendered(page):
       return {n: f.length, layers: [...new Set(f.map(x => x.sourceLayer))], ar: labels.filter(t => /[\\u0600-\\u06FF]/.test(t)).slice(0, 8), z: m.getZoom()}; }""")
 
 with sync_playwright() as p:
-    b = p.chromium.launch(args=['--ozone-platform=headless', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
+    b = p.chromium.launch(executable_path=os.environ.get('CHROME', '/opt/hermes/tools/chromium-1208/chrome-linux64/chrome'), args=['--ozone-platform=headless', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2, is_mobile=True, has_touch=True,
                         locale='ar-BH', geolocation=MANAMA, permissions=['geolocation'],
                         user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1')
@@ -89,9 +89,9 @@ with sync_playwright() as p:
     page.screenshot(path=f'{SHOTS}/10_english_labels.png')
     page.click('#menubtn'); page.click('#langseg button[data-v=ar]'); page.click('#themeseg button[data-v=dark]'); page.click('#menuclose')
     wait_idle(page); page.screenshot(path=f'{SHOTS}/11_dark_arabic.png')
-    page.click('#menubtn'); page.click('#themeseg button[data-v=light]'); page.click('#baseseg button[data-v=sat]'); page.click('#menuclose')
+    page.click('#menubtn'); page.click('#themeseg button[data-v=light]'); page.click('#baseseg button[data-v=esri]'); page.click('#menuclose')
     page.wait_for_timeout(4000)
-    page.screenshot(path=f'{SHOTS}/12_satellite_online.png')
+    page.screenshot(path=f'{SHOTS}/12_esri_online.png')
     page.click('#menubtn'); page.click('#baseseg button[data-v=map]'); page.click('#menuclose')
     check('no page errors (online)', not [e for e in errors if 'arcgisonline' not in e], '; '.join(errors[:3]))
     # ---- OFFLINE ----
