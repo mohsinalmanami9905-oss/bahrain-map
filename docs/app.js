@@ -34,8 +34,21 @@ class BlobSource {
   getKey() { return this.key; }
   async getBytes(offset, length) { return { data: await this.blob.slice(offset, offset + length).arrayBuffer() }; }
 }
+// Range requests over the network; if a CDN edge answers 200 with the whole file (cold cache), keep it as a Blob.
+class RangeOrWholeSource {
+  constructor(url) { this.url = url; this.whole = null; }
+  getKey() { return this.url; }
+  async getBytes(offset, length, signal) {
+    if (this.whole) return { data: await this.whole.slice(offset, offset + length).arrayBuffer() };
+    const r = await fetch(this.url, { headers: { Range: `bytes=${offset}-${offset + length - 1}` }, signal });
+    if (r.status === 206) return { data: await r.arrayBuffer() };
+    if (r.status === 200) { this.whole = await r.blob(); return { data: await this.whole.slice(offset, offset + length).arrayBuffer() }; }
+    throw new Error('HTTP ' + r.status);
+  }
+}
 const protocol = new pmtiles.Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
+protocol.add(new pmtiles.PMTiles(new RangeOrWholeSource(PM_URL)));
 let usingLocal = false;
 async function cachedPmtiles() {
   if (!('caches' in window)) return null;
